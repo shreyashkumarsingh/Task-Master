@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,7 +50,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         <div className="flex h-full flex-col bg-card border-r border-border">
           {/* Logo */}
           <div className="flex h-16 items-center px-6 border-b border-border">
-            <h1 className="text-xl font-bold text-primary">TaskMaster</h1>
+            <h1 className="text-xl font-bold text-black dark:text-white">TaskMaster</h1>
             <Button
               variant="ghost"
               size="icon"

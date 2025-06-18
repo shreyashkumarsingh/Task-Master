@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,8 +17,12 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Loading TaskMaster...</h1>
-        <p className="text-xl text-muted-foreground">Redirecting you to the right place</p>
+        <h1 className="text-4xl font-bold mb-4 text-black dark:text-white">
+          TaskMaster
+        </h1>
+        <p className="text-xl text-black dark:text-white">
+          Loading...<br />Redirecting you to the right place
+        </p>
       </div>
     </div>
   );

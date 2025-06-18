@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTasks } from "@/contexts/TaskContext";
@@ -94,14 +93,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 max-w-7xl mx-auto px-2 sm:px-4">
       {/* Compact Header */}
-      <div className="flex items-center justify-between pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-1">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-xl sm:text-2xl font-bold">
             Welcome back, {user?.name?.split(' ')[0]}! 👋
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Here's what's happening with your tasks today.
           </p>
         </div>
@@ -114,7 +113,7 @@ const Dashboard = () => {
       </div>
 
       {/* Compact Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <Card className="p-3">
           <div className="flex items-center justify-between">
             <div>
@@ -157,7 +156,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
         {/* Upcoming Tasks - Takes 2 columns */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
@@ -272,8 +271,8 @@ const Dashboard = () => {
       {/* Recent Activity */}
       {recentTasks.length > 0 && (
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center">
               <Target className="mr-2 h-4 w-4" />
               Recently Completed
             </CardTitle>

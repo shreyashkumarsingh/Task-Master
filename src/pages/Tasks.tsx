@@ -145,12 +145,12 @@ const Tasks = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 max-w-5xl mx-auto px-2 sm:px-4">
       {/* Compact Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Tasks</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Manage your tasks and stay productive
           </p>
         </div>
@@ -289,8 +289,8 @@ const Tasks = () => {
 
       {/* Compact Filters */}
       <Card>
-        <CardContent className="p-3">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <CardContent className="p-2">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
             <div className="md:col-span-2">
               <div className="relative">
                 <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
@@ -344,7 +344,7 @@ const Tasks = () => {
       </Card>
 
       {/* Compact Tasks List */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
             <Card key={task.id} className={`transition-all hover:shadow-md ${task.completed ? 'opacity-75' : ''}`}>

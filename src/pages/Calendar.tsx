@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useTasks } from "@/contexts/TaskContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,12 +132,12 @@ const Calendar = () => {
   const todayTasks = getTasksForDate(new Date());
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 max-w-6xl mx-auto px-2 sm:px-4">
       {/* Compact Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold">Calendar</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold">Calendar</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             View your tasks organized by date
           </p>
         </div>
@@ -168,7 +167,7 @@ const Calendar = () => {
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between p-3 bg-card rounded-lg border">
+      <div className="flex items-center justify-between p-2 bg-card rounded-lg border">
         <Button variant="outline" size="sm" onClick={navigatePrevious}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -183,7 +182,7 @@ const Calendar = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 items-start">
         {/* Calendar Grid - Takes 3 columns */}
         <Card className="lg:col-span-3">
           <CardContent className="p-0">
