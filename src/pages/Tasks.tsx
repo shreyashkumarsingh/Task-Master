@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { useTasks } from "@/contexts/TaskContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,8 @@ import {
   Clock,
   Trash,
   CheckCircle,
-  Circle
+  Circle,
+  Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -145,19 +145,19 @@ const Tasks = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Compact Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Tasks</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold">Tasks</h1>
+          <p className="text-sm text-muted-foreground">
             Manage your tasks and stay productive
           </p>
         </div>
         
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setEditingTask(null); }}>
+            <Button size="sm" onClick={() => { resetForm(); setEditingTask(null); }}>
               <Plus className="mr-2 h-4 w-4" />
               New Task
             </Button>
@@ -169,39 +169,41 @@ const Tasks = () => {
               </DialogTitle>
             </DialogHeader>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="title" className="text-xs">Title</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter task title"
                   required
+                  className="h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+              <div className="space-y-1">
+                <Label htmlFor="description" className="text-xs">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Enter task description (optional)"
-                  rows={3}
+                  rows={2}
+                  className="text-sm"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="priority" className="text-xs">Priority</Label>
                   <Select
                     value={formData.priority}
                     onValueChange={(value: "low" | "medium" | "high") => 
                       setFormData(prev => ({ ...prev, priority: value }))
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -212,13 +214,13 @@ const Tasks = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="category" className="text-xs">Category</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-8">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -232,24 +234,26 @@ const Tasks = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="dueDate" className="text-xs">Due Date</Label>
                   <Input
                     id="dueDate"
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                    className="h-8"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dueTime">Due Time</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="dueTime" className="text-xs">Due Time</Label>
                   <Input
                     id="dueTime"
                     type="time"
                     value={formData.dueTime}
                     onChange={(e) => setFormData(prev => ({ ...prev, dueTime: e.target.value }))}
+                    className="h-8"
                   />
                 </div>
               </div>
@@ -262,17 +266,18 @@ const Tasks = () => {
                     setFormData(prev => ({ ...prev, reminder: !!checked }))
                   }
                 />
-                <Label htmlFor="reminder">Set reminder</Label>
+                <Label htmlFor="reminder" className="text-xs">Set reminder</Label>
               </div>
 
-              <div className="flex space-x-2 pt-4">
-                <Button type="submit" className="flex-1">
-                  {editingTask ? 'Update Task' : 'Create Task'}
+              <div className="flex space-x-2 pt-2">
+                <Button type="submit" className="flex-1 h-8">
+                  {editingTask ? 'Update' : 'Create'}
                 </Button>
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={() => setShowAddDialog(false)}
+                  className="h-8"
                 >
                   Cancel
                 </Button>
@@ -282,132 +287,116 @@ const Tasks = () => {
         </Dialog>
       </div>
 
-      {/* Filters */}
+      {/* Compact Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Filter className="mr-2 h-5 w-5" />
-            Filters & Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="search">Search</Label>
+        <CardContent className="p-3">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div className="md:col-span-2">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="search"
                   placeholder="Search tasks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 h-8"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Category</Label>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-            <div className="space-y-2">
-              <Label>Priority</Label>
-              <Select value={filterPriority} onValueChange={setFilterPriority}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filterPriority} onValueChange={setFilterPriority}>
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
 
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Tasks</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Tasks</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Tasks List */}
-      <div className="space-y-4">
+      {/* Compact Tasks List */}
+      <div className="space-y-2">
         {filteredTasks.length > 0 ? (
           filteredTasks.map((task) => (
             <Card key={task.id} className={`transition-all hover:shadow-md ${task.completed ? 'opacity-75' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-4">
+              <CardContent className="p-3">
+                <div className="flex items-center space-x-3">
                   <button
                     onClick={() => toggleTaskComplete(task.id)}
-                    className="mt-1 text-primary hover:text-primary/80"
+                    className="text-primary hover:text-primary/80"
                   >
                     {task.completed ? (
-                      <CheckCircle className="h-5 w-5" />
+                      <CheckCircle className="h-4 w-4" />
                     ) : (
-                      <Circle className="h-5 w-5" />
+                      <Circle className="h-4 w-4" />
                     )}
                   </button>
 
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <h3 className={`font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                      <h3 className={`font-medium text-sm ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
                         {task.title}
                       </h3>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEdit(task)}
+                          className="h-6 w-6 p-0"
                         >
-                          Edit
+                          <Edit className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(task.id)}
-                          className="text-destructive hover:text-destructive"
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                         >
-                          <Trash className="h-4 w-4" />
+                          <Trash className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
 
                     {task.description && (
-                      <p className={`text-sm ${task.completed ? 'line-through text-muted-foreground' : 'text-muted-foreground'}`}>
+                      <p className={`text-xs mt-1 ${task.completed ? 'line-through text-muted-foreground' : 'text-muted-foreground'}`}>
                         {task.description}
                       </p>
                     )}
 
-                    <div className="flex items-center space-x-2 flex-wrap">
-                      <Badge variant={getPriorityColor(task.priority)}>
+                    <div className="flex items-center space-x-2 flex-wrap mt-2">
+                      <Badge variant={getPriorityColor(task.priority)} className="text-xs py-0 px-1">
                         {task.priority}
                       </Badge>
-                      <Badge variant="outline">
+                      <Badge variant="outline" className="text-xs py-0 px-1">
                         {task.category}
                       </Badge>
                       {task.dueDate && (
@@ -430,16 +419,16 @@ const Tasks = () => {
           ))
         ) : (
           <Card>
-            <CardContent className="text-center py-12">
-              <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No tasks found</h3>
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="text-center py-8">
+              <CheckCircle className="mx-auto h-8 w-8 text-muted-foreground/50 mb-2" />
+              <h3 className="text-lg font-medium mb-1">No tasks found</h3>
+              <p className="text-sm text-muted-foreground mb-3">
                 {tasks.length === 0 
                   ? "Get started by creating your first task!"
                   : "Try adjusting your filters or search term."
                 }
               </p>
-              <Button onClick={() => setShowAddDialog(true)}>
+              <Button onClick={() => setShowAddDialog(true)} size="sm">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Task
               </Button>
