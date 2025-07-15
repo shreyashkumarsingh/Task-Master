@@ -11,15 +11,20 @@ dotenv.config();
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
-// Configure CORS for production - Allow all origins for now
+// Configure CORS for production
 const corsOptions = {
-  origin: true, // Allow all origins
+  origin: [
+    'https://taskmaster-frontend-qy61.onrender.com', // Production frontend
+    'http://localhost:8082', // Local development
+    'http://localhost:8081', // Alternative local port
+    'http://localhost:3000'  // Vite default port
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
-console.log('CORS configured to allow all origins');
+console.log('CORS configured with allowed origins:', corsOptions.origin);
 console.log('Environment variables:', {
   PORT: process.env.PORT,
   FRONTEND_URL: process.env.FRONTEND_URL,
