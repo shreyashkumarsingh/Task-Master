@@ -4,6 +4,11 @@ import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 
 const router = Router();
 
+// Simple debug endpoint 
+router.get('/debug', (req: Request, res: Response) => {
+  res.json({ message: 'Debug endpoint working', timestamp: new Date().toISOString() });
+});
+
 // Debug endpoint to check database state (remove in production)
 router.get('/debug-users', (req: Request, res: Response) => {
   try {

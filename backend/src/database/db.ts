@@ -29,25 +29,16 @@ export interface Database {
   tasks: Task[];
 }
 
-// For Vercel serverless functions, we'll use a different approach
-// In production, this should be replaced with a proper database
-let inMemoryDB: Database | null = null;
-
-const DB_PATH = path.join(process.cwd(), 'data/database.json');
-
-// Ensure data directory exists
-const ensureDataDir = () => {
-  try {
-    const dataDir = path.dirname(DB_PATH);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
-  } catch (error) {
-    console.warn('Could not create data directory, using in-memory storage');
-  }
+// Simple in-memory database for serverless environment
+// In production, use a proper database like PostgreSQL, MongoDB, etc.
+let inMemoryDB: Database = {
+  users: [],
+  tasks: []
 };
 
-// Initialize database if it doesn't exist
+// Try to use persistent storage, fall back to memory-only
+const DB_PATH = '/tmp/database.json'; // Use /tmp which is writable in Vercel
+
 const initializeDatabase = (): Database => {
   return {
     users: [],
@@ -55,12 +46,10 @@ const initializeDatabase = (): Database => {
   };
 };
 
-// Read database
+// Read database with better error handling
 export const readDatabase = (): Database => {
-  // Always try to read from file first in serverless environment
   try {
-    ensureDataDir();
-    
+    // Try to read from persistent storage first
     if (fs.existsSync(DB_PATH)) {
       const data = fs.readFileSync(DB_PATH, 'utf8');
       const parsed = JSON.parse(data);
@@ -69,32 +58,25 @@ export const readDatabase = (): Database => {
       return parsed;
     }
   } catch (error) {
-    console.warn('Could not read from file:', error);
+    console.warn('Could not read from persistent storage:', error);
   }
   
-  // If file doesn't exist or failed to read, check in-memory
-  if (inMemoryDB) {
-    console.log('Using in-memory database, users count:', inMemoryDB.users.length);
-    return inMemoryDB;
-  }
-  
-  // Initialize new database
-  console.log('Initializing new database');
-  inMemoryDB = initializeDatabase();
+  console.log('Using in-memory database, users count:', inMemoryDB.users.length);
   return inMemoryDB;
 };
 
-// Write database
+// Write database with better error handling
 export const writeDatabase = (data: Database): void => {
-  try {
-    ensureDataDir();
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.warn('Could not write to file, keeping in memory only:', error);
-  }
-  
-  // Always update in-memory copy
+  // Always update in-memory copy first
   inMemoryDB = data;
+  
+  // Try to persist to disk
+  try {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+    console.log('Database saved to file successfully');
+  } catch (error) {
+    console.warn('Could not write to persistent storage, using memory only:', error);
+  }
 };
 
 // User operations
