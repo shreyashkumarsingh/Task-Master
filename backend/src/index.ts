@@ -26,6 +26,15 @@ app.get('/', (req: Request, res: Response) => {
   res.send('TaskMaster Backend is running!');
 });
 
+// Direct test endpoints to bypass router issues
+app.get('/api/direct-test', (req: Request, res: Response) => {
+  res.json({ message: 'Direct endpoint working!' });
+});
+
+app.post('/api/direct-register', (req: Request, res: Response) => {
+  res.status(201).json({ message: 'Direct registration successful!', body: req.body });
+});
+
 app.use('/api/tasks', tasksRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
