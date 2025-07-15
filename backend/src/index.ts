@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import tasksRouter from './routes/tasks';
 import authRouter from './routes/auth';
 import usersRouter from './routes/users';
+import minimalAuthRouter from './routes/minimal-auth';
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/tasks', tasksRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/minimal-auth', minimalAuthRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
