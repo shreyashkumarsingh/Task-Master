@@ -1,8 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Simple in-memory storage for testing
-const users: Array<{ id: string; name: string; email: string; password: string }> = [];
-
 export default function handler(req: VercelRequest, res: VercelResponse) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,46 +17,27 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { name, email, password } = req.body || {};
+    console.log('Registration request received:', {
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    });
 
-    // Basic validation
-    if (!name || !email || !password) {
-      res.status(400).json({ error: 'Name, email, and password are required' });
-      return;
-    }
-
-    // Check if user exists
-    const existingUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (existingUser) {
-      res.status(400).json({ error: 'User with this email already exists' });
-      return;
-    }
-
-    // Create user
-    const newUser = {
-      id: `user_${Date.now()}`,
-      name: String(name),
-      email: String(email).toLowerCase(),
-      password: String(password)
-    };
-
-    users.push(newUser);
-
+    // For now, just return success without any validation
+    // This is to test if the serverless function works at all
     res.status(201).json({
-      message: 'User registered successfully',
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email
-      },
-      token: `token-${newUser.id}`
+      message: 'Registration endpoint working!',
+      success: true,
+      timestamp: new Date().toISOString(),
+      receivedData: req.body
     });
 
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: String(error)
+      details: String(error),
+      stack: error instanceof Error ? error.stack : 'No stack trace'
     });
   }
 }
