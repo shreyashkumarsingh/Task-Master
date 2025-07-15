@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { findUserById } from '../database/db';
 

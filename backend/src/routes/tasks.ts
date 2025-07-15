@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { createTask, findTasksByUserId, updateTask, deleteTask } from '../database/db';
 
@@ -20,7 +20,7 @@ router.get('/', authenticateToken, async (req: AuthenticatedRequest, res: Respon
 router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user!.id;
-    const { title, description, priority, category, dueDate, dueTime } = req.body;
+    const { title, description, priority, category, dueDate, dueTime } = (req as any).body;
 
     if (!title || !priority || !category) {
       return res.status(400).json({ error: 'Title, priority, and category are required' });
@@ -50,9 +50,9 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Respo
 // Update a task
 router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = (req as any).params;
     const userId = req.user!.id;
-    const updates = req.body;
+    const updates = (req as any).body;
 
     // First verify the task belongs to the user
     const userTasks = findTasksByUserId(userId);
@@ -81,7 +81,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Res
 // Delete a task
 router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = (req as any).params;
     const userId = req.user!.id;
 
     // First verify the task belongs to the user
