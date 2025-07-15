@@ -39,6 +39,12 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Only start the server if we're not in a serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+// Export the Express app for Vercel
+export default app;
