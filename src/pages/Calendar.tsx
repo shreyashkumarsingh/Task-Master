@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTasks } from "@/contexts/TaskContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,26 @@ import {
 import { Link } from "react-router-dom";
 import { formatLocalDate } from "@/lib/dateUtils";
 
+// Debug function to help identify date issues
+const debugDateHandling = () => {
+  const today = new Date();
+  console.log('Debug Date Handling:');
+  console.log('Current date:', today);
+  console.log('formatLocalDate(today):', formatLocalDate(today));
+  console.log('today.toISOString():', today.toISOString());
+  console.log('today.toDateString():', today.toDateString());
+  console.log('today.toLocaleDateString():', today.toLocaleDateString());
+};
+
 const Calendar = () => {
   const { tasks, toggleTaskComplete } = useTasks();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week'>('month');
+
+  // Debug date handling on component mount
+  useEffect(() => {
+    debugDateHandling();
+  }, []);
 
   const navigationDate = useMemo(() => {
     if (view === 'month') {
@@ -54,36 +70,55 @@ const Calendar = () => {
   };
 
   const getTasksForDate = (date: Date) => {
-    const dateString = formatLocalDate(date);
-    return tasks.filter(task => task.dueDate === dateString);
+    // Ensure we're comparing dates in local timezone consistently
+    const targetDateString = formatLocalDate(date);
+    
+    return tasks.filter(task => {
+      if (!task.dueDate) return false;
+      
+      // Normalize both dates to ensure consistent comparison
+      const taskDateString = task.dueDate;
+      
+      // Log for debugging (can be removed later)
+      if (tasks.length > 0) {
+        console.log(`Comparing task date "${taskDateString}" with calendar date "${targetDateString}"`);
+      }
+      
+      return taskDateString === targetDateString;
+    });
   };
 
   const generateCalendarDays = () => {
     if (view === 'week') {
-      const startOfWeek = new Date(currentDate);
-      startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-      
       const days = [];
+      // Create a clean date for the start of week calculation
+      const baseDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const dayOfWeek = baseDate.getDay();
+      
       for (let i = 0; i < 7; i++) {
-        const day = new Date(startOfWeek);
-        day.setDate(startOfWeek.getDate() + i);
+        // Calculate offset from Sunday (0) to get the correct week
+        const dayOffset = i - dayOfWeek;
+        const day = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + dayOffset);
         days.push(day);
       }
       return days;
     } else {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const startDate = new Date(firstDay);
-      startDate.setDate(firstDay.getDate() - firstDay.getDay());
+      
+      // Get first day of the month
+      const firstDayOfMonth = new Date(year, month, 1);
+      const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      // Calculate how many days to go back to get to the start of the calendar grid
+      const startDateOffset = -firstDayOfWeek;
       
       const days = [];
       const totalDays = 42; // 6 weeks * 7 days
       
       for (let i = 0; i < totalDays; i++) {
-        const day = new Date(startDate);
-        day.setDate(startDate.getDate() + i);
+        // Create each day from the first of the month with proper offset
+        const day = new Date(year, month, 1 + startDateOffset + i);
         days.push(day);
       }
       
