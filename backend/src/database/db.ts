@@ -31,10 +31,7 @@ export interface Database {
 
 // For Vercel serverless functions, we'll use a different approach
 // In production, this should be replaced with a proper database
-let inMemoryDB: Database = {
-  users: [],
-  tasks: []
-};
+let inMemoryDB: Database | null = null;
 
 const DB_PATH = path.join(process.cwd(), 'data/database.json');
 
@@ -60,24 +57,30 @@ const initializeDatabase = (): Database => {
 
 // Read database
 export const readDatabase = (): Database => {
+  // Always try to read from file first in serverless environment
   try {
     ensureDataDir();
     
     if (fs.existsSync(DB_PATH)) {
       const data = fs.readFileSync(DB_PATH, 'utf8');
       const parsed = JSON.parse(data);
+      console.log('Database loaded from file, users count:', parsed.users?.length || 0);
       inMemoryDB = parsed;
       return parsed;
     }
   } catch (error) {
-    console.warn('Could not read from file, using in-memory storage:', error);
+    console.warn('Could not read from file:', error);
   }
   
-  // Fallback to in-memory database
-  if (inMemoryDB.users.length === 0 && inMemoryDB.tasks.length === 0) {
-    inMemoryDB = initializeDatabase();
+  // If file doesn't exist or failed to read, check in-memory
+  if (inMemoryDB) {
+    console.log('Using in-memory database, users count:', inMemoryDB.users.length);
+    return inMemoryDB;
   }
   
+  // Initialize new database
+  console.log('Initializing new database');
+  inMemoryDB = initializeDatabase();
   return inMemoryDB;
 };
 
