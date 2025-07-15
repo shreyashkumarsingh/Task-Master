@@ -45,6 +45,50 @@ router.delete('/debug-clear-users', (req: Request, res: Response) => {
   }
 });
 
+// Simple test registration endpoint
+router.post('/test-register', async (req: Request, res: Response) => {
+  try {
+    console.log('Test registration attempt');
+    const { name, email, password } = req.body;
+    
+    // Simple validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Missing fields' });
+    }
+    
+    // Try to create user with simple ID
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password: 'simple_hash_' + password, // Simple hash for testing
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Test in-memory storage only
+    const db = readDatabase();
+    db.users.push(newUser);
+    
+    console.log('User created successfully:', newUser.email);
+    
+    res.status(201).json({
+      message: 'Test user created',
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email
+      }
+    });
+  } catch (error) {
+    console.error('Test registration error:', error);
+    res.status(500).json({ 
+      error: 'Test registration failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
   try {
@@ -109,6 +153,51 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(500).json({ 
       error: 'Internal server error',
       details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
+    });
+  }
+});
+
+// Simple test login endpoint
+router.post('/test-login', async (req: Request, res: Response) => {
+  try {
+    console.log('Test login attempt');
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing credentials' });
+    }
+    
+    const db = readDatabase();
+    console.log('Total users in database:', db.users.length);
+    
+    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) {
+      console.log('User not found for email:', email);
+      return res.status(401).json({ error: 'User not found' });
+    }
+    
+    console.log('User found:', user.email);
+    console.log('Expected password:', 'simple_hash_' + password);
+    console.log('Stored password:', user.password);
+    
+    // Simple password check
+    if (user.password !== 'simple_hash_' + password) {
+      return res.status(401).json({ error: 'Wrong password' });
+    }
+    
+    res.json({
+      message: 'Test login successful',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Test login error:', error);
+    res.status(500).json({ 
+      error: 'Test login failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
