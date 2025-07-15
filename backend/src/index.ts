@@ -9,7 +9,7 @@ import usersRouter from './routes/users';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = parseInt(process.env.PORT || '4000', 10);
 
 // Configure CORS for production
 const corsOptions = {
@@ -39,12 +39,10 @@ app.use('/api/tasks', tasksRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 
-// Only start the server if we're not in a serverless environment
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}
+// Start the server (works for both local and Render)
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+});
 
-// Export the Express app for Vercel
+// Export the Express app for compatibility
 export default app;
