@@ -2,7 +2,7 @@
 
 A modern, full-stack task management application built with React, TypeScript, and Node.js. Organize your tasks, track your progress, and boost your productivity with TaskMaster's intuitive interface and powerful features.
 
-![TaskMaster Screenshot](https://via.placeholder.com/800x400/3B82F6/FFFFFF?text=TaskMaster+Dashboard)
+
 
 ## ✨ Features
 
