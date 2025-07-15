@@ -1,98 +1,48 @@
 import { Router, Request, Response } from 'express';
-import { createUser, findUserByEmail, readDatabase } from '../database/db';
-import { hashPassword, comparePassword, generateToken } from '../utils/auth';
 
 const router = Router();
 
-// Simple debug endpoint 
-router.get('/debug', (req: Request, res: Response) => {
-  res.json({ message: 'Debug endpoint working', timestamp: new Date().toISOString() });
-});
+// Simple in-memory user storage (replace with real database in production)
+let users: Array<{
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: string;
+}> = [];
 
-// Debug endpoint to check database state (remove in production)
+// Debug endpoint to check users
 router.get('/debug-users', (req: Request, res: Response) => {
   try {
-    const db = readDatabase();
-    const userSummary = db.users.map(user => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      hasPassword: !!user.password,
-      passwordLength: user.password?.length || 0,
-      createdAt: user.createdAt
-    }));
     res.json({
-      totalUsers: db.users.length,
-      users: userSummary
+      totalUsers: users.length,
+      users: users.map(user => ({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        hasPassword: !!user.password,
+        createdAt: user.createdAt
+      }))
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to read database' });
+    res.status(500).json({ error: 'Failed to read users' });
   }
 });
 
-// Debug endpoint to clear all users (remove in production)
+// Clear users for testing
 router.delete('/debug-clear-users', (req: Request, res: Response) => {
   try {
-    const db = readDatabase();
-    db.users = [];
-    db.tasks = [];
-    // Force write to both file and memory
-    const { writeDatabase } = require('../database/db');
-    writeDatabase(db);
-    res.json({ message: 'All users cleared' });
+    users = [];
+    res.json({ message: 'All users cleared', totalUsers: users.length });
   } catch (error) {
     res.status(500).json({ error: 'Failed to clear users' });
-  }
-});
-
-// Simple test registration endpoint
-router.post('/test-register', async (req: Request, res: Response) => {
-  try {
-    console.log('Test registration attempt');
-    const { name, email, password } = req.body;
-    
-    // Simple validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Missing fields' });
-    }
-    
-    // Try to create user with simple ID
-    const newUser = {
-      id: `user_${Date.now()}`,
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      password: 'simple_hash_' + password, // Simple hash for testing
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Test in-memory storage only
-    const db = readDatabase();
-    db.users.push(newUser);
-    
-    console.log('User created successfully:', newUser.email);
-    
-    res.status(201).json({
-      message: 'Test user created',
-      user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email
-      }
-    });
-  } catch (error) {
-    console.error('Test registration error:', error);
-    res.status(500).json({ 
-      error: 'Test registration failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
   }
 });
 
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    console.log('Registration attempt:', { body: req.body });
+    console.log('Registration attempt:', req.body);
     
     const { name, email, password } = req.body;
 
@@ -109,29 +59,25 @@ router.post('/register', async (req: Request, res: Response) => {
 
     console.log('Checking for existing user...');
     // Check if user already exists
-    const existingUser = findUserByEmail(email);
+    const existingUser = users.find(user => user.email.toLowerCase() === email.toLowerCase());
     if (existingUser) {
       console.log('User already exists');
       return res.status(400).json({ error: 'User with this email already exists' });
     }
 
-    console.log('Hashing password...');
-    // Hash password and create user
-    const hashedPassword = await hashPassword(password);
-    
     console.log('Creating user...');
-    const newUser = createUser({
+    // Create user (storing plain password for debugging - NOT for production!)
+    const newUser = {
+      id: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      password: hashedPassword
-    });
+      password: password, // Plain text for debugging
+      createdAt: new Date().toISOString()
+    };
 
-    console.log('Generating token...');
-    // Generate token
-    const token = generateToken({
-      userId: newUser.id,
-      email: newUser.email
-    });
+    users.push(newUser);
+    console.log('User created successfully:', newUser.email);
+    console.log('Total users now:', users.length);
 
     // Return user data without password
     const userResponse = {
@@ -145,58 +91,12 @@ router.post('/register', async (req: Request, res: Response) => {
     res.status(201).json({
       message: 'User registered successfully',
       user: userResponse,
-      token
+      token: `fake-token-${newUser.id}` // Fake token for debugging
     });
   } catch (error) {
     console.error('Registration error details:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'Unknown error');
     res.status(500).json({ 
       error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
-    });
-  }
-});
-
-// Simple test login endpoint
-router.post('/test-login', async (req: Request, res: Response) => {
-  try {
-    console.log('Test login attempt');
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Missing credentials' });
-    }
-    
-    const db = readDatabase();
-    console.log('Total users in database:', db.users.length);
-    
-    const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    if (!user) {
-      console.log('User not found for email:', email);
-      return res.status(401).json({ error: 'User not found' });
-    }
-    
-    console.log('User found:', user.email);
-    console.log('Expected password:', 'simple_hash_' + password);
-    console.log('Stored password:', user.password);
-    
-    // Simple password check
-    if (user.password !== 'simple_hash_' + password) {
-      return res.status(401).json({ error: 'Wrong password' });
-    }
-    
-    res.json({
-      message: 'Test login successful',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Test login error:', error);
-    res.status(500).json({ 
-      error: 'Test login failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
@@ -216,32 +116,22 @@ router.post('/login', async (req: Request, res: Response) => {
 
     // Find user
     console.log('Looking for user with email:', email);
-    const user = findUserByEmail(email);
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (!user) {
       console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     console.log('User found:', { id: user.id, email: user.email, hasPassword: !!user.password });
-    console.log('Stored password hash:', user.password);
-    console.log('Attempting to verify password...');
+    console.log('Password check:', password, '===', user.password, '?', password === user.password);
 
-    // Compare password
-    const isPasswordValid = await comparePassword(password, user.password);
-    console.log('Password validation result:', isPasswordValid);
-    
-    if (!isPasswordValid) {
+    // Compare password (plain text for debugging)
+    if (user.password !== password) {
       console.log('Password validation failed');
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     console.log('Login successful for user:', user.email);
-
-    // Generate token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email
-    });
 
     // Return user data without password
     const userResponse = {
@@ -254,43 +144,11 @@ router.post('/login', async (req: Request, res: Response) => {
     res.json({
       message: 'Login successful',
       user: userResponse,
-      token
+      token: `fake-token-${user.id}` // Fake token for debugging
     });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Verify token endpoint
-router.get('/verify', async (req: Request, res: Response) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    const token = authHeader.substring(7);
-    const decoded = require('../utils/auth').verifyToken(token);
-    const user = findUserByEmail(decoded.email);
-
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    const userResponse = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: user.createdAt
-    };
-
-    res.json({
-      valid: true,
-      user: userResponse
-    });
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
   }
 });
 
