@@ -11,13 +11,20 @@ dotenv.config();
 const app = express();
 const PORT = parseInt(process.env.PORT || '4000', 10);
 
-// Configure CORS for production
+// Configure CORS for production - Allow all origins for now
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: true, // Allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+
+console.log('CORS configured to allow all origins');
+console.log('Environment variables:', {
+  PORT: process.env.PORT,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+  NODE_ENV: process.env.NODE_ENV
+});
 
 app.use(cors(corsOptions));
 app.use(express.json());
