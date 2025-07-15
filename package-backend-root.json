@@ -1,0 +1,13 @@
+{
+  "name": "taskmaster-backend-root",
+  "version": "1.0.0",
+  "main": "backend/dist/src/index.js",
+  "scripts": {
+    "build": "cd backend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
