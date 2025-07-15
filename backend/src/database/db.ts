@@ -29,13 +29,24 @@ export interface Database {
   tasks: Task[];
 }
 
-const DB_PATH = path.join(__dirname, '../../data/database.json');
+// For Vercel serverless functions, we'll use a different approach
+// In production, this should be replaced with a proper database
+let inMemoryDB: Database = {
+  users: [],
+  tasks: []
+};
+
+const DB_PATH = path.join(process.cwd(), 'data/database.json');
 
 // Ensure data directory exists
 const ensureDataDir = () => {
-  const dataDir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
+  try {
+    const dataDir = path.dirname(DB_PATH);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+  } catch (error) {
+    console.warn('Could not create data directory, using in-memory storage');
   }
 };
 
@@ -49,34 +60,38 @@ const initializeDatabase = (): Database => {
 
 // Read database
 export const readDatabase = (): Database => {
-  ensureDataDir();
-  
-  if (!fs.existsSync(DB_PATH)) {
-    const initialData = initializeDatabase();
-    fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2));
-    return initialData;
-  }
-  
   try {
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
+    ensureDataDir();
+    
+    if (fs.existsSync(DB_PATH)) {
+      const data = fs.readFileSync(DB_PATH, 'utf8');
+      const parsed = JSON.parse(data);
+      inMemoryDB = parsed;
+      return parsed;
+    }
   } catch (error) {
-    console.error('Error reading database:', error);
-    const initialData = initializeDatabase();
-    fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2));
-    return initialData;
+    console.warn('Could not read from file, using in-memory storage:', error);
   }
+  
+  // Fallback to in-memory database
+  if (inMemoryDB.users.length === 0 && inMemoryDB.tasks.length === 0) {
+    inMemoryDB = initializeDatabase();
+  }
+  
+  return inMemoryDB;
 };
 
 // Write database
 export const writeDatabase = (data: Database): void => {
-  ensureDataDir();
   try {
+    ensureDataDir();
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
   } catch (error) {
-    console.error('Error writing database:', error);
-    throw new Error('Failed to save data');
+    console.warn('Could not write to file, keeping in memory only:', error);
   }
+  
+  // Always update in-memory copy
+  inMemoryDB = data;
 };
 
 // User operations
