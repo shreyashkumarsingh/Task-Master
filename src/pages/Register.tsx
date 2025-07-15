@@ -40,8 +40,8 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const success = await register(name, email, password);
-      if (success) {
+      const result = await register(name, email, password);
+      if (result.success) {
         toast({
           title: "Account created!",
           description: "Welcome to TaskMaster! You are now logged in.",
@@ -49,7 +49,7 @@ const Register = () => {
       } else {
         toast({
           title: "Registration failed",
-          description: "An account with this email already exists.",
+          description: result.message || "An error occurred during registration.",
           variant: "destructive",
         });
       }
@@ -136,7 +136,7 @@ const Register = () => {
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary hover:underline font-medium">
+          <Link to="/login" className="text-foreground dark:text-black hover:underline font-medium">
             Sign in
           </Link>
         </p>

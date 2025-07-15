@@ -25,8 +25,8 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
 
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">TaskMaster</h1>
-          <p className="text-white/80">Your personal productivity companion</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">TaskMaster</h1>
+          <p className="text-muted-foreground">Your personal productivity companion</p>
         </div>
         
         <div className={`${theme === 'dark' ? 'glass-dark' : 'glass'} rounded-xl p-8 shadow-2xl`}>

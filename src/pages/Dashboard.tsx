@@ -93,112 +93,120 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-2 max-w-7xl mx-auto px-2 sm:px-4">
-      {/* Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-1">
+    <div className="p-4 md:p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">
+          <h1 className="text-2xl md:text-3xl font-bold">
             Welcome back, {user?.name?.split(' ')[0]}! 👋
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-sm md:text-base text-muted-foreground">
             Here's what's happening with your tasks today.
           </p>
         </div>
         <Link to="/tasks">
-          <Button size="sm">
+          <Button>
             <Plus className="mr-2 h-4 w-4" />
             New Task
           </Button>
         </Link>
       </div>
 
-      {/* Compact Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <Card className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Total Tasks</p>
-              <p className="text-lg font-bold">{stats.total}</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Tasks</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
             </div>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </div>
+          </CardContent>
         </Card>
 
-        <Card className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Today</p>
-              <p className="text-lg font-bold">{stats.today}</p>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Today</p>
+                <p className="text-2xl font-bold">{stats.today}</p>
+              </div>
+              <Calendar className="h-5 w-5 text-muted-foreground" />
             </div>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </div>
+          </CardContent>
         </Card>
 
-        <Card className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Overdue</p>
-              <p className="text-lg font-bold text-destructive">{stats.overdue}</p>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Overdue</p>
+                <p className="text-2xl font-bold text-destructive">{stats.overdue}</p>
+              </div>
+              <AlertCircle className="h-5 w-5 text-destructive" />
             </div>
-            <AlertCircle className="h-4 w-4 text-destructive" />
-          </div>
+          </CardContent>
         </Card>
 
-        <Card className="p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Completion</p>
-              <p className="text-lg font-bold">{stats.completionRate.toFixed(0)}%</p>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Completion</p>
+                <p className="text-2xl font-bold">{stats.completionRate.toFixed(0)}%</p>
+              </div>
+              <CheckCircle className="h-5 w-5 text-green-600" />
             </div>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </div>
+          </CardContent>
         </Card>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Upcoming Tasks - Takes 2 columns */}
         <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center">
-              <Clock className="mr-2 h-4 w-4" />
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="mr-2 h-5 w-5" />
               Upcoming Tasks
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             {upcomingTasks.length > 0 ? (
               <>
                 {upcomingTasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-2 rounded border hover:bg-accent/50 transition-colors">
+                  <div key={task.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 transition-colors">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{task.title}</p>
+                      <p className="font-medium truncate">{task.title}</p>
                       <div className="flex items-center space-x-2 mt-1">
-                        <Badge variant={getPriorityColor(task.priority)} className="text-xs py-0 px-1">
+                        <Badge variant={getPriorityColor(task.priority)} className="text-xs">
                           {task.priority}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-sm text-muted-foreground">
                           {task.dueDate && formatDate(task.dueDate)}
                           {task.dueTime && ` at ${task.dueTime}`}
                         </span>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs ml-2">
+                    <Badge variant="outline" className="ml-3">
                       {task.category}
                     </Badge>
                   </div>
                 ))}
-                <Link to="/tasks">
-                  <Button variant="outline" size="sm" className="w-full mt-2">
+                <Link to="/tasks" className="block">
+                  <Button variant="outline" className="w-full">
                     View All Tasks
                   </Button>
                 </Link>
               </>
             ) : (
-              <div className="text-center py-6">
-                <ListTodo className="mx-auto h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground mt-2">No upcoming tasks</p>
+              <div className="text-center py-8">
+                <ListTodo className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                <p className="text-muted-foreground mt-2">No upcoming tasks</p>
                 <Link to="/tasks">
-                  <Button variant="outline" size="sm" className="mt-2">
+                  <Button variant="outline" className="mt-3">
                     Create Task
                   </Button>
                 </Link>
@@ -208,27 +216,27 @@ const Dashboard = () => {
         </Card>
 
         {/* Quick Stats Sidebar */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Progress</CardTitle>
+            <CardHeader>
+              <CardTitle>Progress</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <div>
-                <div className="flex justify-between text-sm mb-1">
+                <div className="flex justify-between text-sm mb-2">
                   <span>Completion Rate</span>
                   <span>{stats.completionRate.toFixed(0)}%</span>
                 </div>
                 <Progress value={stats.completionRate} className="h-2" />
               </div>
               
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="p-2 bg-green-50 dark:bg-green-950 rounded">
-                  <p className="text-lg font-bold text-green-600">{stats.completed}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
                   <p className="text-xs text-green-700 dark:text-green-400">Completed</p>
                 </div>
-                <div className="p-2 bg-blue-50 dark:bg-blue-950 rounded">
-                  <p className="text-lg font-bold text-blue-600">{stats.pending}</p>
+                <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-blue-600">{stats.pending}</p>
                   <p className="text-xs text-blue-700 dark:text-blue-400">Pending</p>
                 </div>
               </div>
@@ -236,32 +244,30 @@ const Dashboard = () => {
           </Card>
 
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Priority Tasks</CardTitle>
+            <CardHeader>
+              <CardTitle>Priority Tasks</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm">High Priority</span>
-                <Badge variant="destructive" className="text-xs">{stats.highPriority}</Badge>
+                <Badge variant="destructive">{stats.highPriority}</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">Tomorrow</span>
-                <Badge variant="outline" className="text-xs">{stats.tomorrow}</Badge>
+                <Badge variant="outline">{stats.tomorrow}</Badge>
               </div>
               
-              <div className="pt-2 border-t">
-                <div className="grid grid-cols-2 gap-2">
-                  <Link to="/tasks" className="w-full">
-                    <Button variant="outline" size="sm" className="w-full text-xs">
-                      Add Task
-                    </Button>
-                  </Link>
-                  <Link to="/calendar" className="w-full">
-                    <Button variant="outline" size="sm" className="w-full text-xs">
-                      Calendar
-                    </Button>
-                  </Link>
-                </div>
+              <div className="pt-3 border-t space-y-2">
+                <Link to="/tasks" className="block">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Add Task
+                  </Button>
+                </Link>
+                <Link to="/calendar" className="block">
+                  <Button variant="outline" size="sm" className="w-full">
+                    Calendar
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -271,18 +277,18 @@ const Dashboard = () => {
       {/* Recent Activity */}
       {recentTasks.length > 0 && (
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center">
-              <Target className="mr-2 h-4 w-4" />
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Target className="mr-2 h-5 w-5" />
               Recently Completed
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               {recentTasks.map((task) => (
-                <div key={task.id} className="p-2 bg-green-50 dark:bg-green-950 rounded border border-green-200 dark:border-green-800">
+                <div key={task.id} className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="h-3 w-3 text-green-600" />
+                    <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                     <p className="text-sm font-medium text-green-700 dark:text-green-400 truncate">
                       {task.title}
                     </p>

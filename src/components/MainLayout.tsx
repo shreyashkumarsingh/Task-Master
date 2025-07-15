@@ -11,8 +11,7 @@ import {
   Sun, 
   Moon, 
   User,
-  Menu,
-  X
+  Menu
 } from "lucide-react";
 
 interface MainLayoutProps {
@@ -35,109 +34,144 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile sidebar overlay */}
+      {/* Mobile navigation overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:static lg:inset-0`}>
-        <div className="flex h-full flex-col bg-card border-r border-border">
-          {/* Logo */}
-          <div className="flex h-16 items-center px-6 border-b border-border">
-            <h1 className="text-xl font-bold text-black dark:text-white">TaskMaster</h1>
+      {/* Top Navigation Bar */}
+      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+          {/* Logo and Brand */}
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-foreground">TaskMaster</h1>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {navigation.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    <Icon className="mr-2 h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Right side controls */}
+          <div className="flex items-center space-x-3">
+            {/* User info - hidden on mobile */}
+            <div className="hidden sm:flex items-center space-x-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden lg:block">
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+            </div>
+
+            {/* Theme toggle */}
             <Button
               variant="ghost"
               size="icon"
-              className="ml-auto lg:hidden"
-              onClick={() => setSidebarOpen(false)}
+              onClick={toggleTheme}
+              className="h-9 w-9"
             >
-              <X className="h-5 w-5" />
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
+            {/* Logout button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="hidden sm:flex"
+            >
+              Logout
+            </Button>
+
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
             </Button>
           </div>
+        </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
+        {/* Mobile Navigation Menu */}
+        <div className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
+          sidebarOpen ? 'max-h-screen border-t border-border' : 'max-h-0'
+        }`}>
+          <nav className="px-4 py-3 space-y-2 bg-background">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(item.href)
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <Icon className="mr-3 h-5 w-5" />
+                  <Icon className="mr-3 h-4 w-4" />
                   {item.name}
                 </Link>
               );
             })}
-          </nav>
-
-          {/* User section */}
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center space-x-3 mb-4">
-              <Avatar>
-                <AvatarFallback>
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-              </div>
-            </div>
             
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={toggleTheme}
-                className="flex-1"
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
+            {/* Mobile user section */}
+            <div className="pt-3 border-t border-border">
+              <div className="flex items-center space-x-3 mb-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={logout}
-                className="flex-1"
+                className="w-full"
               >
                 Logout
               </Button>
             </div>
-          </div>
+          </nav>
         </div>
-      </div>
+      </header>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 h-16 bg-background/80 backdrop-blur-sm border-b border-border flex items-center px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Page content */}
-        <main className="flex-1 p-6">
-          {children}
-        </main>
-      </div>
+      <main className="flex-1">
+        {children}
+      </main>
     </div>
   );
 };

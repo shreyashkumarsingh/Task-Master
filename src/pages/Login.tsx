@@ -89,17 +89,9 @@ const Login = () => {
       <div className="text-center">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{" "}
-          <Link to="/register" className="text-primary hover:underline font-medium">
+          <Link to="/register" className="text-foreground dark:text-black hover:underline font-medium">
             Sign up
           </Link>
-        </p>
-      </div>
-
-      <div className="text-center">
-        <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
-          <strong>Demo Account:</strong><br />
-          Email: demo@taskmaster.com<br />
-          Password: demo123
         </p>
       </div>
     </div>

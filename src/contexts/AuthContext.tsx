@@ -11,85 +11,114 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (name: string, email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize demo user if no users exist
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    if (users.length === 0) {
-      const demoUser = {
-        id: 'demo-1',
-        name: 'Demo User',
-        email: 'demo@taskmaster.com',
-        password: 'demo123'
-      };
-      localStorage.setItem('users', JSON.stringify([demoUser]));
-    }
-
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
+    const token = localStorage.getItem('token');
+    if (token) {
+      verifyToken(token);
+    } else {
+      setLoading(false);
     }
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const foundUser = users.find((u: any) => u.email === email && u.password === password);
-    
-    if (foundUser) {
-      const userWithoutPassword = { id: foundUser.id, name: foundUser.name, email: foundUser.email };
-      setUser(userWithoutPassword);
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      return true;
+  const verifyToken = async (token: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('token');
+      }
+    } catch (error) {
+      console.error('Token verification failed:', error);
+      localStorage.removeItem('token');
+    } finally {
+      setLoading(false);
     }
-    return false;
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const existingUser = users.find((u: any) => u.email === email);
-    
-    if (existingUser) {
-      return false; // User already exists
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        return true;
+      } else {
+        console.error('Login failed:', data.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password
-    };
-    
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    const userWithoutPassword = { id: newUser.id, name: newUser.name, email: newUser.email };
-    setUser(userWithoutPassword);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    return true;
+  };
+
+  const register = async (name: string, email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        setUser(data.user);
+        setIsAuthenticated(true);
+        return { success: true };
+      } else {
+        return { success: false, message: data.error };
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { success: false, message: 'Network error. Please try again.' };
+    }
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "name": "Shreyash",
+      "email": "24shreyashkrsingh@gmail.com",
+      "password": "$2b$10$cIif47Lf.SWSLFfTX7pMu.cZUdu9Yh3BKmtd.057y9ExxGejkuL5W",
+      "id": "user_1752560461750_yy1ic5fgc",
+      "createdAt": "2025-07-15T06:21:01.750Z",
+      "updatedAt": "2025-07-15T06:21:01.750Z"
+    }
+  ],
+  "tasks": []
+}
