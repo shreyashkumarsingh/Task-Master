@@ -1,0 +1,12 @@
+{
+  "name": "taskmaster-backend-deploy",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd backend && npm install && npm run build",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
