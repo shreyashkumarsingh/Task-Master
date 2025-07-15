@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Date Test</title>
+</head>
+<body>
+    <h1>Calendar Date Generation Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Copy the formatLocalDate function
+        const formatLocalDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        // Test July 2025 calendar generation
+        const year = 2025;
+        const month = 6; // July (0-indexed)
+        
+        const firstDayOfMonth = new Date(year, month, 1);
+        const firstDayOfWeek = firstDayOfMonth.getDay();
+        
+        console.log('First day of July 2025:', firstDayOfMonth.toDateString());
+        console.log('Day of week:', firstDayOfWeek);
+        
+        // Generate calendar days
+        const startDate = new Date(year, month, 1 - firstDayOfWeek);
+        console.log('Start date:', startDate.toDateString());
+        
+        let output = '<h2>July 2025 Calendar Grid</h2><table border="1"><tr>';
+        output += '<th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+        
+        for (let week = 0; week < 6; week++) {
+            output += '<tr>';
+            for (let day = 0; day < 7; day++) {
+                const dayIndex = week * 7 + day;
+                const currentDay = new Date(startDate);
+                currentDay.setDate(startDate.getDate() + dayIndex);
+                
+                const dayStr = formatLocalDate(currentDay);
+                const isCurrentMonth = currentDay.getMonth() === month;
+                
+                output += `<td style="padding: 10px; ${isCurrentMonth ? 'background: #e6f3ff' : 'background: #f5f5f5'}">`;
+                output += `<strong>${currentDay.getDate()}</strong><br>`;
+                output += `<small>${dayStr}</small>`;
+                output += '</td>';
+                
+                // Log key dates
+                if (dayStr === '2025-07-15' || dayStr === '2025-07-16') {
+                    console.log(`${dayStr}: Week ${week}, Day ${day}, Index ${dayIndex}`);
+                }
+            }
+            output += '</tr>';
+        }
+        
+        output += '</table>';
+        document.getElementById('output').innerHTML = output;
+    </script>
+</body>
+</html>

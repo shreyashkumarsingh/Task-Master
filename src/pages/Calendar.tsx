@@ -18,12 +18,17 @@ import { formatLocalDate } from "@/lib/dateUtils";
 // Debug function to help identify date issues
 const debugDateHandling = () => {
   const today = new Date();
-  console.log('Debug Date Handling:');
+  const july15 = new Date(2025, 6, 15); // Month is 0-indexed, so 6 = July
+  const july16 = new Date(2025, 6, 16);
+  
+  console.log('=== Debug Date Handling ===');
   console.log('Current date:', today);
-  console.log('formatLocalDate(today):', formatLocalDate(today));
+  console.log('Today formatted:', formatLocalDate(today));
+  console.log('July 15, 2025:', july15.toDateString(), '→', formatLocalDate(july15));
+  console.log('July 16, 2025:', july16.toDateString(), '→', formatLocalDate(july16));
   console.log('today.toISOString():', today.toISOString());
-  console.log('today.toDateString():', today.toDateString());
-  console.log('today.toLocaleDateString():', today.toLocaleDateString());
+  console.log('today.getTimezoneOffset():', today.getTimezoneOffset());
+  console.log('========================');
 };
 
 const Calendar = () => {
@@ -73,19 +78,25 @@ const Calendar = () => {
     // Ensure we're comparing dates in local timezone consistently
     const targetDateString = formatLocalDate(date);
     
-    return tasks.filter(task => {
+    const matchingTasks = tasks.filter(task => {
       if (!task.dueDate) return false;
       
       // Normalize both dates to ensure consistent comparison
       const taskDateString = task.dueDate;
+      const matches = taskDateString === targetDateString;
       
-      // Log for debugging (can be removed later)
-      if (tasks.length > 0) {
-        console.log(`Comparing task date "${taskDateString}" with calendar date "${targetDateString}"`);
+      // Only log when we have tasks and there are matches or near-matches
+      if (tasks.length > 0 && (matches || Math.abs(new Date(taskDateString).getDate() - date.getDate()) <= 1)) {
+        console.log(`Calendar Task Match:
+          Date: ${date.toDateString()} → "${targetDateString}"
+          Task: "${task.title}" → "${taskDateString}" 
+          Match: ${matches}`);
       }
       
-      return taskDateString === targetDateString;
+      return matches;
     });
+    
+    return matchingTasks;
   };
 
   const generateCalendarDays = () => {
@@ -110,15 +121,20 @@ const Calendar = () => {
       const firstDayOfMonth = new Date(year, month, 1);
       const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
       
-      // Calculate how many days to go back to get to the start of the calendar grid
-      const startDateOffset = -firstDayOfWeek;
-      
       const days = [];
       const totalDays = 42; // 6 weeks * 7 days
       
+      console.log(`Calendar Generation:
+        Month: ${month + 1}/${year}
+        First Day: ${firstDayOfMonth.toDateString()} (Day ${firstDayOfWeek})`);
+      
+      // Start from the Sunday before the first day of the month
+      const startDate = new Date(year, month, 1 - firstDayOfWeek);
+      
       for (let i = 0; i < totalDays; i++) {
-        // Create each day from the first of the month with proper offset
-        const day = new Date(year, month, 1 + startDateOffset + i);
+        // Create each day by adding days to the start date
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
         days.push(day);
       }
       
