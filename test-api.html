@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>TaskMaster API Test</h1>
+    <div id="results"></div>
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            // Test if API is reachable
+            try {
+                console.log('Testing API connection...');
+                const response = await fetch('http://localhost:4000/api/tasks', {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                results.innerHTML = `
+                    <p>API Status: ${response.status}</p>
+                    <p>Response: ${text}</p>
+                `;
+            } catch (error) {
+                console.error('API Error:', error);
+                results.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>

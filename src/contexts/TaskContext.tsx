@@ -27,9 +27,12 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Load tasks when user is authenticated
   useEffect(() => {
+    console.log('TaskContext: Auth state changed:', { isAuthenticated, userId: user?.id });
     if (isAuthenticated && user) {
+      console.log('TaskContext: User authenticated, refreshing tasks');
       refreshTasks();
     } else {
+      console.log('TaskContext: User not authenticated, clearing tasks');
       setTasks([]);
     }
   }, [isAuthenticated, user]);
@@ -48,29 +51,42 @@ export const TaskProvider = ({ children }: { children: React.ReactNode }) => {
   }, [categories]);
 
   const refreshTasks = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      console.log('TaskContext: User not authenticated, skipping task refresh');
+      return;
+    }
     
+    console.log('TaskContext: Refreshing tasks for authenticated user');
     setLoading(true);
     try {
       const fetchedTasks = await taskAPI.getTasks();
+      console.log('TaskContext: Tasks fetched:', fetchedTasks.length);
       setTasks(fetchedTasks);
     } catch (error) {
       console.error('Failed to refresh tasks:', error);
+      // Don't clear tasks on error, keep existing ones
     } finally {
       setLoading(false);
     }
   };
 
   const addTask = async (taskData: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<boolean> => {
-    if (!isAuthenticated) return false;
+    if (!isAuthenticated) {
+      console.error('User not authenticated');
+      return false;
+    }
 
     try {
+      console.log('Creating task:', taskData);
       const newTask = await taskAPI.createTask(taskData);
       if (newTask) {
+        console.log('Task created successfully:', newTask);
         setTasks(prev => [...prev, newTask]);
         return true;
+      } else {
+        console.error('Failed to create task: API returned null');
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Failed to add task:', error);
       return false;

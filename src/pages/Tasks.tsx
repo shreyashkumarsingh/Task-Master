@@ -21,6 +21,7 @@ import {
   Edit
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getTodayString, getTomorrowString } from "@/lib/dateUtils";
 
 const Tasks = () => {
   const { tasks, categories, addTask, updateTask, deleteTask, toggleTaskComplete } = useTasks();
@@ -70,7 +71,7 @@ const Tasks = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title.trim()) {
@@ -82,23 +83,52 @@ const Tasks = () => {
       return;
     }
 
-    if (editingTask) {
-      updateTask(editingTask, formData);
+    try {
+      let success = false;
+      
+      if (editingTask) {
+        success = await updateTask(editingTask, formData);
+        if (success) {
+          toast({
+            title: "Task updated",
+            description: "Your task has been updated successfully.",
+          });
+          setEditingTask(null);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to update task. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else {
+        success = await addTask({ ...formData, completed: false });
+        if (success) {
+          toast({
+            title: "Task created",
+            description: "Your new task has been added.",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to create task. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      resetForm();
+      setShowAddDialog(false);
+    } catch (error) {
+      console.error('Task operation error:', error);
       toast({
-        title: "Task updated",
-        description: "Your task has been updated successfully.",
-      });
-      setEditingTask(null);
-    } else {
-      addTask({ ...formData, completed: false });
-      toast({
-        title: "Task created",
-        description: "Your new task has been added.",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
     }
-
-    resetForm();
-    setShowAddDialog(false);
   };
 
   const handleEdit = (task: any) => {
@@ -115,12 +145,29 @@ const Tasks = () => {
     setShowAddDialog(true);
   };
 
-  const handleDelete = (taskId: string) => {
-    deleteTask(taskId);
-    toast({
-      title: "Task deleted",
-      description: "The task has been removed.",
-    });
+  const handleDelete = async (taskId: string) => {
+    try {
+      const success = await deleteTask(taskId);
+      if (success) {
+        toast({
+          title: "Task deleted",
+          description: "The task has been removed.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete task. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Delete task error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting the task.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -134,13 +181,16 @@ const Tasks = () => {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    const today = getTodayString();
+    const tomorrow = getTomorrowString();
 
     if (dateString === today) return 'Today';
     if (dateString === tomorrow) return 'Tomorrow';
+    
+    // Parse the date string and format it nicely
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString();
   };
 

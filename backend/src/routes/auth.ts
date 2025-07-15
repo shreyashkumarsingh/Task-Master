@@ -1,56 +1,14 @@
 import { Router, Request, Response } from 'express';
+import { createUser, findUserByEmail } from '../database/db';
+import { hashPassword, comparePassword, generateToken } from '../utils/auth';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
 
-// Super simple test endpoint
-router.get('/test', (req: Request, res: Response) => {
-  res.json({ 
-    message: 'Auth router is working!', 
-    timestamp: new Date().toISOString() 
-  });
-});
-
-// Simple in-memory user storage (replace with real database in production)
-let users: Array<{
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-  createdAt: string;
-}> = [];
-
-// Debug endpoint to check users
-router.get('/debug-users', (req: Request, res: Response) => {
+// Registration endpoint
+router.post('/register', async (req: Request, res: Response) => {
   try {
-    res.json({
-      totalUsers: users.length,
-      users: users.map(user => ({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        hasPassword: !!user.password,
-        createdAt: user.createdAt
-      }))
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to read users' });
-  }
-});
-
-// Clear users for testing
-router.delete('/debug-clear-users', (req: Request, res: Response) => {
-  try {
-    users = [];
-    res.json({ message: 'All users cleared', totalUsers: users.length });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to clear users' });
-  }
-});
-
-// Super simple registration endpoint for debugging
-router.post('/register', (req: Request, res: Response) => {
-  try {
-    console.log('Simple registration attempt:', req.body);
+    console.log('Registration attempt:', { email: req.body?.email });
     
     const { name, email, password } = req.body || {};
 
@@ -60,20 +18,30 @@ router.post('/register', (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    console.log('All fields present, creating user...');
+    // Check if user already exists
+    const existingUser = findUserByEmail(email);
+    if (existingUser) {
+      console.log('User already exists with email:', email);
+      return res.status(400).json({ error: 'User already exists with this email' });
+    }
+
+    console.log('Creating user...');
     
-    // Create simple user object
-    const newUser = {
-      id: `user_${Date.now()}`,
+    // Hash password and create user
+    const hashedPassword = await hashPassword(password);
+    const newUser = createUser({
       name: String(name).trim(),
       email: String(email).toLowerCase().trim(),
-      password: String(password),
-      createdAt: new Date().toISOString()
-    };
+      password: hashedPassword
+    });
 
-    // Add to array
-    users.push(newUser);
-    console.log('User created successfully. Total users:', users.length);
+    // Generate JWT token
+    const token = generateToken({
+      userId: newUser.id,
+      email: newUser.email
+    });
+
+    console.log('User created successfully:', newUser.email);
 
     // Return success
     res.status(201).json({
@@ -81,10 +49,9 @@ router.post('/register', (req: Request, res: Response) => {
       user: {
         id: newUser.id,
         name: newUser.name,
-        email: newUser.email,
-        createdAt: newUser.createdAt
+        email: newUser.email
       },
-      token: `token-${newUser.id}`
+      token
     });
     
   } catch (error) {
@@ -96,10 +63,10 @@ router.post('/register', (req: Request, res: Response) => {
   }
 });
 
-// Simple login endpoint
-router.post('/login', (req: Request, res: Response) => {
+// Login endpoint
+router.post('/login', async (req: Request, res: Response) => {
   try {
-    console.log('Simple login attempt:', req.body);
+    console.log('Login attempt:', { email: req.body?.email });
     const { email, password } = req.body || {};
 
     // Validation
@@ -109,8 +76,7 @@ router.post('/login', (req: Request, res: Response) => {
     }
 
     // Find user
-    console.log('Looking for user with email:', email, 'in', users.length, 'users');
-    const user = users.find(u => u.email.toLowerCase() === String(email).toLowerCase());
+    const user = findUserByEmail(email);
     if (!user) {
       console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid email or password' });
@@ -119,10 +85,17 @@ router.post('/login', (req: Request, res: Response) => {
     console.log('User found:', user.email);
     
     // Check password
-    if (user.password !== password) {
+    const passwordMatch = await comparePassword(password, user.password);
+    if (!passwordMatch) {
       console.log('Password mismatch');
       return res.status(401).json({ error: 'Invalid email or password' });
     }
+
+    // Generate JWT token
+    const token = generateToken({
+      userId: user.id,
+      email: user.email
+    });
 
     console.log('Login successful');
 
@@ -132,10 +105,9 @@ router.post('/login', (req: Request, res: Response) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email,
-        createdAt: user.createdAt
+        email: user.email
       },
-      token: `token-${user.id}`
+      token
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -143,6 +115,20 @@ router.post('/login', (req: Request, res: Response) => {
       error: 'Internal server error',
       details: String(error)
     });
+  }
+});
+
+// Token verification endpoint
+router.get('/verify', authenticateToken, (req: AuthenticatedRequest, res: Response) => {
+  try {
+    console.log('Token verification for user:', req.user?.email);
+    res.json({
+      message: 'Token valid',
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
