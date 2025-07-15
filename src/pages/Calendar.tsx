@@ -13,6 +13,7 @@ import {
   Plus
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatLocalDate } from "@/lib/dateUtils";
 
 const Calendar = () => {
   const { tasks, toggleTaskComplete } = useTasks();
@@ -53,7 +54,7 @@ const Calendar = () => {
   };
 
   const getTasksForDate = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = formatLocalDate(date);
     return tasks.filter(task => task.dueDate === dateString);
   };
 

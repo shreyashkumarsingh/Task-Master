@@ -16,22 +16,22 @@ import {
   Target,
   ListTodo
 } from "lucide-react";
+import { getTodayString, getTomorrowString, compareDates } from "@/lib/dateUtils";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { tasks } = useTasks();
 
   const stats = useMemo(() => {
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = getTodayString();
+    const tomorrow = getTomorrowString();
 
     const completedTasks = tasks.filter(task => task.completed);
     const pendingTasks = tasks.filter(task => !task.completed);
     const todayTasks = tasks.filter(task => task.dueDate === today);
     const tomorrowTasks = tasks.filter(task => task.dueDate === tomorrow);
     const overdueTasks = tasks.filter(task => 
-      !task.completed && task.dueDate && task.dueDate < today
+      !task.completed && task.dueDate && compareDates(task.dueDate, today) < 0
     );
     const highPriorityTasks = tasks.filter(task => 
       !task.completed && task.priority === 'high'
@@ -82,13 +82,17 @@ const Dashboard = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    if (!dateString) return '';
+    
+    const today = getTodayString();
+    const tomorrow = getTomorrowString();
 
     if (dateString === today) return 'Today';
     if (dateString === tomorrow) return 'Tomorrow';
+    
+    // Parse the date string and format it nicely
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString();
   };
 
