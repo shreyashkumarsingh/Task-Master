@@ -37,7 +37,21 @@ let inMemoryDB: Database = {
 };
 
 // Try to use persistent storage, fall back to memory-only
-const DB_PATH = '/tmp/database.json'; // Use /tmp which is writable in Vercel
+// Use a Windows-compatible path for local development
+const getDbPath = (): string => {
+  if (process.env.NODE_ENV === 'production') {
+    return '/tmp/database.json'; // Vercel/Render writable directory
+  } else {
+    // For local development on Windows/Mac/Linux
+    const dataDir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    return path.join(dataDir, 'database.json');
+  }
+};
+
+const DB_PATH = getDbPath();
 
 const initializeDatabase = (): Database => {
   return {
