@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Agenda Vista Backend is running!');
+  res.send('TaskMaster Backend is running!');
 });
 
 app.use('/api/tasks', tasksRouter);
